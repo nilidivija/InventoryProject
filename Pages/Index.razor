@@ -1,7 +1,99 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+@using InventoryProject.Data
+@using Newtonsoft.Json
 
-Welcome to your new app.
+@inject HttpClient Http
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<div class="container-fluid">
+    <table class="table table-condensed table-bordered">
+        <thead>
+            <tr>
+                <th>DevId</th>
+                <th>DevType</th>
+                <th>DevTypeOther</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Owner</th>
+                <th>Location</th>
+                <th>Serial</th>
+                <th>PurchaseDate</th>
+                <th>WarrantyExpDate</th>
+                <th>ServiceExpDate</th>
+                <th>Value</th>
+                <th>Size</th>
+                <th>Toner</th>
+                <th>MacAddress</th>
+                <th>IPAddress</th>
+                <th>CellNumber</th>
+                <th>UpdDate</th>
+                <th>DevStatus</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (device_GetAlls != null)
+            {
+                @foreach (var item in device_GetAlls)
+                {
+
+            <tr>
+                <td>@item.DevId</td>
+                <td>@item.DevType</td>
+                <td>@item.DevTypeOther</td>
+                <td>@item.Make</td>
+                <td>@item.Model</td>
+                <td>@item.Owner</td>
+                <td>@item.Location</td>
+                <td>@item.Serial</td>
+                <td>@item.PurchaseDate</td>
+                <td>@item.WarrantyExpDate</td>
+                <td>@item.ServiceExpDate</td>
+                <td>@item.Value</td>
+                <td>@item.Size</td>
+                <td>@item.Toner</td>
+                <td>@item.MacAddress</td>
+                <td>@item.IPAddress</td>
+                <td>@item.CellNumber</td>
+                <td>@item.UpdDate</td>
+                <td>@item.DevStatus</td>
+
+
+            </tr>
+
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@code{
+
+    List<Device_GetAll> device_GetAlls = new List<Device_GetAll>();
+
+    protected override async Task OnInitializedAsync()
+    {
+      
+        await GetAllData();
+    }
+
+    private async Task GetAllData()
+    {
+        var tokenKey = new[]
+        {
+            new KeyValuePair<string,string>("token","A12F7A58-842D-4111-A44D-5F8C4E1AA521")
+
+        };
+
+        string apiUrl = "https://tools.brandinstitute.com/wsInventory/wsInventory.asmx/Device_GetAll";
+
+        var httpResponse = await Http.PostAsync(apiUrl, new FormUrlEncodedContent(tokenKey));
+
+        if (httpResponse.IsSuccessStatusCode)
+        {
+            InventoryAPIResponse inventoryAPIResponseData = JsonConvert.DeserializeObject<InventoryAPIResponse>(await httpResponse.Content.ReadAsStringAsync());
+
+            device_GetAlls = JsonConvert.DeserializeObject<List<Device_GetAll>>(inventoryAPIResponseData.Data);
+
+        }
+    }
+}

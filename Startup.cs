@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace InventoryProject
 {
@@ -28,7 +29,8 @@ namespace InventoryProject
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
+            services.AddSingleton<HttpClient>();
+          
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
