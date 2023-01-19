@@ -1,0 +1,169 @@
+﻿@page "/view/{DevId}"
+
+@using InventoryProject.Data
+@using Newtonsoft.Json
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+@inject HttpClient Http
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-9">
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Device ID</span>
+                </div>
+                <input type="number" @bind="@device_Get.DevId" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Device Type</span>
+                </div>
+                <input type="text" @bind="@device_Get.DevType" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Device Type Other</span>
+                </div>
+                <input type="text" @bind="@device_Get.DevTypeOther" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Make</span>
+                </div>
+                <input type="text" @bind="@device_Get.Make" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Model</span>
+                </div>
+                <input type="text" @bind="@device_Get.Model" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Owner</span>
+                </div>
+                <input type="text" @bind="@device_Get.Owner" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Location</span>
+                </div>
+                <input type="text" @bind="@device_Get.Location" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Serial</span>
+                </div>
+                <input type="text" @bind="@device_Get.Serial" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Purchase Date</span>
+                </div>
+                <input type="datetime" @bind="@device_Get.PurchaseDate" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Warranty Expiry Date</span>
+                </div>
+                <input type="datetime" @bind="@device_Get.WarrantyExpDate" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Service Expiry Date</span>
+                </div>
+                <input type="datetime" @bind="@device_Get.ServiceExpDate" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Value</span>
+                </div>
+                <input type="number" @bind="@device_Get.Value" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Size</span>
+                </div>
+                <input type="number" @bind="@device_Get.Size" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Toner</span>
+                </div>
+                <input type="number" @bind="@device_Get.Toner" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Mac Address</span>
+                </div>
+                <input type="number" @bind="@device_Get.MacAddress" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">IP Address</span>
+                </div>
+                <input type="number" @bind="@device_Get.IPAddress" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Cell Number</span>
+                </div>
+                <input type="number" @bind="@device_Get.CellNumber" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Update Date</span>
+                </div>
+                <input type="datetime" @bind="@device_Get.UpdDate" readonly />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Device Status</span>
+                </div>
+                <input type="text" @bind="@device_Get.DevStatus" readonly />
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string DevId { get; set; }
+
+    Device_GetAll device_Get = new Device_GetAll();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        await Device_Get();
+    }
+
+    private async Task Device_Get()
+    {
+        var tokenKey = new[]
+        {
+            new KeyValuePair<string,string>("token","A12F7A58-842D-4111-A44D-5F8C4E1AA521"),
+            new KeyValuePair<string,string>("DevId",DevId)
+
+
+        };
+
+        string apiUrl = "https://tools.brandinstitute.com/wsInventory/wsInventory.asmx/Device_Get";
+
+        var httpResponse = await Http.PostAsync(apiUrl, new FormUrlEncodedContent(tokenKey));
+
+        if (httpResponse.IsSuccessStatusCode)
+        {
+            InventoryAPIResponse inventoryAPIResponseData = JsonConvert.DeserializeObject<InventoryAPIResponse>(await httpResponse.Content.ReadAsStringAsync());
+
+            device_Get = JsonConvert.DeserializeObject<Device_GetAll>(inventoryAPIResponseData.Data);
+
+        }
+    }
+
+
+}

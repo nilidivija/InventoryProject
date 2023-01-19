@@ -2,77 +2,105 @@
 
 @using InventoryProject.Data
 @using Newtonsoft.Json
-
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
 @inject HttpClient Http
 
+@if (Show)
+{
+    <div class="modal" tabindex="-1" style="display: block; background: rgba(205, 205, 205, 0.5); " role="dialog">
+
+        <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h4 class="modal-title">Delete</h4>
+
+                </div>
+
+                <div class="modal-body">
+                    Are you sure you want to delete the record
+                    <span>@DeviceId</span>?
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" @onclick="ClosePopUp">No</button>
+                    <button type="button" class="btn btn-danger" @onclick="() => Confirmation(true)">Yes</button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+}
+
+
 <div class="container-fluid">
-    <table class="table table-condensed table-bordered">
-        <thead>
-            <tr>
-                <th>DevId</th>
-                <th>DevType</th>
-                <th>DevTypeOther</th>
-                <th>Make</th>
-                <th>Model</th>
-                <th>Owner</th>
-                <th>Location</th>
-                <th>Serial</th>
-                <th>PurchaseDate</th>
-                <th>WarrantyExpDate</th>
-                <th>ServiceExpDate</th>
-                <th>Value</th>
-                <th>Size</th>
-                <th>Toner</th>
-                <th>MacAddress</th>
-                <th>IPAddress</th>
-                <th>CellNumber</th>
-                <th>UpdDate</th>
-                <th>DevStatus</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (device_GetAlls != null)
-            {
-                @foreach (var item in device_GetAlls)
-                {
+    <div class="row">
+        <div class="col">
+            <button type="button" class="btn btn-outline-primary" @onclick="@showAddForm">Add New Device</button>
 
-            <tr>
-                <td>@item.DevId</td>
-                <td>@item.DevType</td>
-                <td>@item.DevTypeOther</td>
-                <td>@item.Make</td>
-                <td>@item.Model</td>
-                <td>@item.Owner</td>
-                <td>@item.Location</td>
-                <td>@item.Serial</td>
-                <td>@item.PurchaseDate</td>
-                <td>@item.WarrantyExpDate</td>
-                <td>@item.ServiceExpDate</td>
-                <td>@item.Value</td>
-                <td>@item.Size</td>
-                <td>@item.Toner</td>
-                <td>@item.MacAddress</td>
-                <td>@item.IPAddress</td>
-                <td>@item.CellNumber</td>
-                <td>@item.UpdDate</td>
-                <td>@item.DevStatus</td>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col">
+            <div class="table-responsive-xl">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                       
+                        <th>Device Type</th>
+                        <th>Device Serial</th>
+                        <th>Device Status</th>
+                        <th>Actions</th>
 
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (device_GetAlls != null)
+                    {
+                        @foreach (var item in device_GetAlls)
+                        {
 
-            </tr>
+                    <tr>
 
-                }
-            }
-        </tbody>
-    </table>
+                        <td>@item.DevType</td>
+                        <td>@item.Serial</td>
+                        <td>@item.DevStatus</td>
+                        <td>
+                            <button type="button" class="btn btn-outline-primary" @onclick="@(()=>showViewForm(item.DevId))">Details</button>
+                            <button type="button" class="btn btn-primary" @onclick="@(()=>showEditForm(@item.DevId))">Edit</button>
+                            <button type="button" class="btn btn-danger" @onclick="@(()=>showDelete(@item.DevId))">Delete</button>
+
+                        </td>
+                    </tr>
+
+                        }
+                    }
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code{
+
+    public int DeviceId;
+    public bool Show = false;
 
     List<Device_GetAll> device_GetAlls = new List<Device_GetAll>();
 
     protected override async Task OnInitializedAsync()
     {
-      
+
         await GetAllData();
     }
 
@@ -95,5 +123,56 @@
             device_GetAlls = JsonConvert.DeserializeObject<List<Device_GetAll>>(inventoryAPIResponseData.Data);
 
         }
+    }
+
+    public void showEditForm(int DevId)
+    {
+        NavManager.NavigateTo("edit/" + DevId, true);
+    }
+    public void showDelete(int DevId)
+
+    {
+        DeviceId = DevId;
+        Show = true;
+    }
+    public void showAddForm()
+    {
+        NavManager.NavigateTo("add", true);
+    }
+    public void showViewForm(int DevId)
+    {
+        NavManager.NavigateTo("view/" + DevId, true);
+    }
+
+    public void ClosePopUp()
+    {
+
+        Show = false;
+
+    }
+    public async Task Confirmation(bool value)
+    {
+        Show = false;
+        var tokenKey = new[]
+      {
+            new KeyValuePair<string,string>("token","A12F7A58-842D-4111-A44D-5F8C4E1AA521"),
+            new KeyValuePair<string,string>("DevId",DeviceId.ToString())
+
+
+        };
+
+        string apiUrl = "https://tools.brandinstitute.com/wsInventory/wsInventory.asmx/Device_Del";
+
+        var httpResponse = await Http.PostAsync(apiUrl, new FormUrlEncodedContent(tokenKey));
+
+        if (httpResponse.IsSuccessStatusCode)
+        {
+            InventoryAPIResponse inventoryAPIResponseData = JsonConvert.DeserializeObject<InventoryAPIResponse>(await httpResponse.Content.ReadAsStringAsync());
+
+            await Task.Run(() => JSRuntime.InvokeVoidAsync("alert", $"'{inventoryAPIResponseData.Msg}','{inventoryAPIResponseData.Total}'"));
+            NavManager.NavigateTo("/", true);
+        }
+
+
     }
 }

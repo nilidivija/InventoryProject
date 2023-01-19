@@ -24,7 +24,7 @@ namespace InventoryProject.Data
         public string Model { get; set; }
 
         [JsonProperty("Owner")]
-        public char Owner { get; set; }
+        public string Owner { get; set; }
 
         [JsonProperty("Location")]
         public string Location { get; set; }
@@ -63,7 +63,7 @@ namespace InventoryProject.Data
         public DateTime UpdDate{ get; set; }
 
         [JsonProperty("DevStatus")]
-        public int DevStatus { get; set; }
+        public string DevStatus { get; set; }
 
 
     }
